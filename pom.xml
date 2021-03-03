@@ -19,8 +19,8 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <artifactId>flink-connector-kudu_2.11</artifactId>
-  <groupId>org.kudu.connector</groupId>
-  <version>1.2-SNAPSHOT</version>
+  <groupId>org.colloh.kudu.connector</groupId>
+  <version>1.2.1</version>
   <name>flink-connector-kudu</name>
   <packaging>jar</packaging>
 

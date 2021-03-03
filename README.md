@@ -4,15 +4,7 @@
 
 # 使用姿势
 
-## 引入依赖
-
-```xml
-<dependency>
-  	<artifactId>flink-connector-kudu_2.11</artifactId>
-    <groupId>org.forchange.connector</groupId>
-    <version>1.2-SNAPSHOT</version>
- </dependency>
-```
+* clone代码后，改造pom项目坐标后上传公司私服使用
 
 ## Kudu Catalog使用
 
