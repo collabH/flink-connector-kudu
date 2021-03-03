@@ -1,0 +1,24 @@
+<component name="ProjectCodeStyleConfiguration">
+  <code_scheme name="Project" version="173">
+    <option name="LINE_SEPARATOR" value="&#10;" />
+    <JavaCodeStyleSettings>
+      <option name="CLASS_COUNT_TO_USE_IMPORT_ON_DEMAND" value="10" />
+      <option name="NAMES_COUNT_TO_USE_IMPORT_ON_DEMAND" value="20" />
+    </JavaCodeStyleSettings>
+    <ScalaCodeStyleSettings>
+      <option name="alwaysUsedImports">
+        <array>
+          <option value="org.apache.spark.implicits._" />
+        </array>
+      </option>
+      <option name="MULTILINE_STRING_CLOSING_QUOTES_ON_NEW_LINE" value="true" />
+      <option name="TYPE_ANNOTATION_PRIVATE_MEMBER" value="true" />
+      <option name="TYPE_ANNOTATION_LOCAL_DEFINITION" value="true" />
+      <option name="TYPE_ANNOTATION_FUNCTION_PARAMETER" value="true" />
+      <option name="TYPE_ANNOTATION_UNDERSCORE_PARAMETER" value="true" />
+      <option name="TYPE_ANNOTATION_EXCLUDE_MEMBER_OF_ANONYMOUS_CLASS" value="true" />
+      <option name="TYPE_ANNOTATION_EXCLUDE_MEMBER_OF_PRIVATE_CLASS" value="true" />
+      <option name="SD_BLANK_LINE_AFTER_RETURN_COMMENTS" value="true" />
+    </ScalaCodeStyleSettings>
+  </code_scheme>
+</component>
