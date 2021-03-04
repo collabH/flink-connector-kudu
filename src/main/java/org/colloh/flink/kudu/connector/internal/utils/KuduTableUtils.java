@@ -119,6 +119,7 @@ public class KuduTableUtils {
     public static List<ColumnSchema> toKuduConnectorColumns(List<Tuple2<String, DataType>> columns, Collection<String> keyColumns) {
         return columns.stream()
                 .map(t -> {
+                    // todo 更个性化的kudu表配置
                             ColumnSchema.ColumnSchemaBuilder builder = new ColumnSchema
                                     .ColumnSchemaBuilder(t.f0, KuduTypeUtils.toKuduType(t.f1))
                                     .key(keyColumns.contains(t.f0))

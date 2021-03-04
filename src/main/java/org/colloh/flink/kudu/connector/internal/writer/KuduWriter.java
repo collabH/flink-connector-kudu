@@ -36,6 +36,10 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * todo write kudu table config
+ * @param <T>
+ */
 @Internal
 public class KuduWriter<T> implements AutoCloseable {
 
