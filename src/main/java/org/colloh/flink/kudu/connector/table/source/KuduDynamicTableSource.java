@@ -17,13 +17,7 @@
 
 package org.colloh.flink.kudu.connector.table.source;
 
-import org.colloh.flink.kudu.connector.format.KuduRowDataInputFormat;
-import org.colloh.flink.kudu.connector.internal.KuduFilterInfo;
-import org.colloh.flink.kudu.connector.internal.KuduTableInfo;
-import org.colloh.flink.kudu.connector.internal.convertor.RowResultRowDataConvertor;
-import org.colloh.flink.kudu.connector.internal.reader.KuduReaderConfig;
-import org.colloh.flink.kudu.connector.table.lookup.RowDataLookupFunction;
-import org.colloh.flink.kudu.connector.table.lookup.KuduLookupOptions;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.flink.shaded.guava18.com.google.common.collect.Lists;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.table.connector.ChangelogMode;
@@ -32,22 +26,32 @@ import org.apache.flink.table.connector.source.InputFormatProvider;
 import org.apache.flink.table.connector.source.LookupTableSource;
 import org.apache.flink.table.connector.source.ScanTableSource;
 import org.apache.flink.table.connector.source.TableFunctionProvider;
+import org.apache.flink.table.connector.source.abilities.SupportsFilterPushDown;
 import org.apache.flink.table.connector.source.abilities.SupportsLimitPushDown;
 import org.apache.flink.table.connector.source.abilities.SupportsProjectionPushDown;
+import org.apache.flink.table.expressions.ResolvedExpression;
 import org.apache.flink.table.utils.TableSchemaUtils;
 import org.apache.flink.types.RowKind;
 import org.apache.flink.util.Preconditions;
+import org.colloh.flink.kudu.connector.format.KuduRowDataInputFormat;
+import org.colloh.flink.kudu.connector.internal.KuduFilterInfo;
+import org.colloh.flink.kudu.connector.internal.KuduTableInfo;
+import org.colloh.flink.kudu.connector.internal.convertor.RowResultRowDataConvertor;
+import org.colloh.flink.kudu.connector.internal.reader.KuduReaderConfig;
+import org.colloh.flink.kudu.connector.internal.utils.KuduTableUtils;
+import org.colloh.flink.kudu.connector.table.lookup.KuduLookupOptions;
+import org.colloh.flink.kudu.connector.table.lookup.RowDataLookupFunction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 public class KuduDynamicTableSource implements ScanTableSource, SupportsProjectionPushDown,
-        SupportsLimitPushDown, LookupTableSource {
+        SupportsLimitPushDown, LookupTableSource, SupportsFilterPushDown {
 
     private static final Logger LOG = LoggerFactory.getLogger(KuduDynamicTableSource.class);
 
@@ -55,24 +59,19 @@ public class KuduDynamicTableSource implements ScanTableSource, SupportsProjecti
     private final KuduTableInfo tableInfo;
     private TableSchema physicalSchema;
     private final String[] projectedFields;
-    // predicate expression to apply
-    @Nullable
-    private final List<KuduFilterInfo> predicates;
-    private boolean isFilterPushedDown;
     private final KuduLookupOptions kuduLookupOptions;
 
     private final KuduRowDataInputFormat kuduRowDataInputFormat;
 
+    private transient List<ResolvedExpression> filters;
+    private transient List<KuduFilterInfo> predicates = Lists.newArrayList();
+
     public KuduDynamicTableSource(KuduReaderConfig.Builder configBuilder, KuduTableInfo tableInfo,
-                                  TableSchema physicalSchema, List<KuduFilterInfo> predicates, String[] projectedFields, KuduLookupOptions kuduLookupOptions) {
+                                  TableSchema physicalSchema, String[] projectedFields, KuduLookupOptions kuduLookupOptions) {
         this.configBuilder = configBuilder;
         this.tableInfo = tableInfo;
         this.physicalSchema = physicalSchema;
-        this.predicates = predicates;
         this.projectedFields = projectedFields;
-        if (predicates != null && predicates.size() != 0) {
-            this.isFilterPushedDown = true;
-        }
         this.kuduRowDataInputFormat = new KuduRowDataInputFormat(configBuilder.build(), new RowResultRowDataConvertor(), tableInfo,
                 predicates == null ? Collections.emptyList() : predicates,
                 projectedFields == null ? null : Lists.newArrayList(projectedFields));
@@ -110,15 +109,24 @@ public class KuduDynamicTableSource implements ScanTableSource, SupportsProjecti
 
     @Override
     public ScanRuntimeProvider getScanRuntimeProvider(ScanContext runtimeProviderContext) {
+        if (CollectionUtils.isNotEmpty(this.filters)) {
+            for (ResolvedExpression filter : this.filters) {
+                Optional<KuduFilterInfo> kuduFilterInfo = KuduTableUtils.toKuduFilterInfo(filter);
+                if (kuduFilterInfo != null && kuduFilterInfo.isPresent()) {
+                    this.predicates.add(kuduFilterInfo.get());
+                }
+
+            }
+        }
         KuduRowDataInputFormat inputFormat = new KuduRowDataInputFormat(configBuilder.build(), new RowResultRowDataConvertor(), tableInfo,
-                predicates == null ? Collections.emptyList() : predicates,
+                this.predicates,
                 projectedFields == null ? null : Lists.newArrayList(projectedFields));
         return InputFormatProvider.of(inputFormat);
     }
 
     @Override
     public DynamicTableSource copy() {
-        return new KuduDynamicTableSource(this.configBuilder, this.tableInfo, this.physicalSchema, this.predicates, this.projectedFields, this.kuduLookupOptions);
+        return new KuduDynamicTableSource(this.configBuilder, this.tableInfo, this.physicalSchema, this.projectedFields, this.kuduLookupOptions);
     }
 
     @Override
@@ -139,24 +147,27 @@ public class KuduDynamicTableSource implements ScanTableSource, SupportsProjecti
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        } else if (!(o instanceof KuduDynamicTableSource)) {
-            return false;
-        } else {
-            KuduDynamicTableSource that = (KuduDynamicTableSource) o;
-            return isFilterPushedDown == that.isFilterPushedDown && Objects.equals(configBuilder, that.configBuilder) && Objects.equals(tableInfo, that.tableInfo) && Objects.equals(physicalSchema, that.physicalSchema) && Arrays.equals(projectedFields, that.projectedFields) && Objects.equals(predicates, that.predicates) && Objects.equals(kuduLookupOptions, that.kuduLookupOptions) && Objects.equals(kuduRowDataInputFormat, that.kuduRowDataInputFormat);
-        }
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        KuduDynamicTableSource that = (KuduDynamicTableSource) o;
+        return Objects.equals(configBuilder, that.configBuilder) && Objects.equals(tableInfo, that.tableInfo) && Objects.equals(physicalSchema, that.physicalSchema) && Arrays.equals(projectedFields, that.projectedFields) && Objects.equals(kuduLookupOptions, that.kuduLookupOptions) && Objects.equals(kuduRowDataInputFormat, that.kuduRowDataInputFormat) && Objects.equals(filters, that.filters) && Objects.equals(predicates, that.predicates);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(configBuilder, tableInfo, physicalSchema, predicates, isFilterPushedDown, kuduLookupOptions, kuduRowDataInputFormat);
+        int result = Objects.hash(configBuilder, tableInfo, physicalSchema, kuduLookupOptions, kuduRowDataInputFormat, filters, predicates);
+        result = 31 * result + Arrays.hashCode(projectedFields);
+        return result;
     }
-
 
     @Override
     public void applyLimit(long limit) {
         configBuilder.setRowLimit((int) limit);
+    }
+
+    @Override
+    public Result applyFilters(List<ResolvedExpression> filters) {
+        this.filters = filters;
+        return Result.of(Collections.emptyList(), filters);
     }
 }

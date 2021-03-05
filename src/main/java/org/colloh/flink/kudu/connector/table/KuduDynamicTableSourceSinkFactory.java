@@ -170,7 +170,7 @@ public class KuduDynamicTableSourceSinkFactory implements DynamicTableSourceFact
         KuduReaderConfig.Builder configBuilder = KuduReaderConfig.Builder
                 .setMasters(masterAddresses)
                 .setRowLimit(scanRowSize);
-        return new KuduDynamicTableSource(configBuilder, tableInfo, physicalSchema, null, physicalSchema.getFieldNames(), kuduLookupOptions);
+        return new KuduDynamicTableSource(configBuilder, tableInfo, physicalSchema, physicalSchema.getFieldNames(), kuduLookupOptions);
     }
 
     @Override
