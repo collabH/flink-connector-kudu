@@ -18,15 +18,15 @@ package org.colloh.flink.kudu.connector.internal.reader;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.flink.annotation.Internal;
-import org.colloh.flink.kudu.connector.internal.KuduFilterInfo;
-import org.colloh.flink.kudu.connector.internal.KuduTableInfo;
-import org.colloh.flink.kudu.connector.internal.convertor.RowResultConvertor;
 import org.apache.kudu.client.KuduClient;
 import org.apache.kudu.client.KuduException;
 import org.apache.kudu.client.KuduScanToken;
 import org.apache.kudu.client.KuduSession;
 import org.apache.kudu.client.KuduTable;
 import org.apache.kudu.client.LocatedTablet;
+import org.colloh.flink.kudu.connector.internal.KuduFilterInfo;
+import org.colloh.flink.kudu.connector.internal.KuduTableInfo;
+import org.colloh.flink.kudu.connector.internal.convertor.RowResultConvertor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

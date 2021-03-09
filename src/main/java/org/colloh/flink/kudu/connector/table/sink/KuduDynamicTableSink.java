@@ -1,8 +1,5 @@
 package org.colloh.flink.kudu.connector.table.sink;
 
-import org.colloh.flink.kudu.connector.internal.KuduTableInfo;
-import org.colloh.flink.kudu.connector.internal.writer.KuduWriterConfig;
-import org.colloh.flink.kudu.connector.internal.writer.RowDataUpsertOperationMapper;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.table.connector.ChangelogMode;
 import org.apache.flink.table.connector.sink.DynamicTableSink;
@@ -10,6 +7,9 @@ import org.apache.flink.table.connector.sink.SinkFunctionProvider;
 import org.apache.flink.table.data.RowData;
 import org.apache.flink.types.RowKind;
 import org.apache.flink.util.Preconditions;
+import org.colloh.flink.kudu.connector.internal.KuduTableInfo;
+import org.colloh.flink.kudu.connector.internal.writer.KuduWriterConfig;
+import org.colloh.flink.kudu.connector.internal.writer.RowDataUpsertOperationMapper;
 
 import java.util.Objects;
 
@@ -42,7 +42,7 @@ public class KuduDynamicTableSink implements DynamicTableSink {
 
     @Override
     public SinkRuntimeProvider getSinkRuntimeProvider(Context context) {
-        KuduSink<RowData> upsertKuduSink = new KuduSink<>(writerConfigBuilder.build(), tableInfo, new RowDataUpsertOperationMapper(flinkSchema.getFieldNames()));
+        KuduSink<RowData> upsertKuduSink = new KuduSink<>(writerConfigBuilder.build(), tableInfo, new RowDataUpsertOperationMapper(flinkSchema));
         return SinkFunctionProvider.of(upsertKuduSink);
     }
 

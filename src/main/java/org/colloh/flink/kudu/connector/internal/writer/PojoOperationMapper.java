@@ -28,7 +28,7 @@ import java.util.Map;
 @PublicEvolving
 public class PojoOperationMapper<T> extends AbstractSingleOperationMapper<T> {
 
-    private final Field[] fields;
+    private final transient Field[] fields;
 
     protected PojoOperationMapper(Class<T> pojoClass, String[] columnNames) {
         this(pojoClass, columnNames, null);

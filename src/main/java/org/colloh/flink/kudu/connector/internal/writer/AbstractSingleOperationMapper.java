@@ -92,10 +92,6 @@ public abstract class AbstractSingleOperationMapper<T> implements KuduOperationM
 
         for (int i = 0; i < columnNames.length; i++) {
             Object field = getField(input, i);
-            if (field instanceof BinaryStringData) {
-                BinaryStringData binaryStringData = (BinaryStringData) field;
-                field = binaryStringData.toString();
-            }
             partialRow.addObject(columnNames[i], field);
         }
 
