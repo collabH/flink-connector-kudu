@@ -19,7 +19,6 @@ package org.colloh.flink.kudu.connector.internal.writer;
 import org.apache.flink.annotation.Internal;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.table.data.DecimalData;
-import org.apache.flink.table.data.GenericRowData;
 import org.apache.flink.table.data.RowData;
 import org.apache.flink.table.data.StringData;
 import org.apache.flink.table.types.DataType;
@@ -58,19 +57,19 @@ public class RowDataUpsertOperationMapper extends AbstractSingleOperationMapper<
 
     @Override
     public Object getField(RowData input, int i) {
-        return getFieldValue(input,i);
+        return getFieldValue(input, i);
     }
 
     public Object getFieldValue(RowData input, int i) {
-        if(input == null || input.isNullAt(i)){
+        if (input == null || input.isNullAt(i)) {
             return null;
         }
         LogicalType fieldType = logicalTypes[i];
-        switch (fieldType.getTypeRoot()){
+        switch (fieldType.getTypeRoot()) {
             case CHAR:
             case VARCHAR: {
-                StringData data =  input.getString(i);
-                if(data !=null){
+                StringData data = input.getString(i);
+                if (data != null) {
                     return data.toString();
                 }
                 return null;
@@ -79,22 +78,22 @@ public class RowDataUpsertOperationMapper extends AbstractSingleOperationMapper<
                 return input.getBoolean(i);
             case BINARY:
             case VARBINARY:
-                input.getBinary(i);
+                return input.getBinary(i);
             case DECIMAL: {
                 DecimalType decimalType = (DecimalType) fieldType;
                 final int precision = decimalType.getPrecision();
                 final int scale = decimalType.getScale();
                 DecimalData data = input.getDecimal(i, precision, scale);
-                if (data !=null){
+                if (data != null) {
                     return data.toBigDecimal();
-                }else{
+                } else {
                     return null;
                 }
             }
             case TINYINT:
                 return input.getByte(i);
             case SMALLINT:
-                input.getShort(i);
+                return input.getShort(i);
             case INTEGER:
             case DATE:
             case INTERVAL_YEAR_MONTH:
@@ -130,6 +129,6 @@ public class RowDataUpsertOperationMapper extends AbstractSingleOperationMapper<
 
     @Override
     public Optional<Operation> createBaseOperation(RowData input, KuduTable table) {
-        return Optional.of(input.getRowKind() == RowKind.DELETE ? table.newDelete() :table.newUpsert());
+        return Optional.of(input.getRowKind() == RowKind.DELETE ? table.newDelete() : table.newUpsert());
     }
 }
