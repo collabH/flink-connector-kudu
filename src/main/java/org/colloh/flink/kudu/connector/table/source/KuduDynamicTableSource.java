@@ -84,7 +84,7 @@ public class KuduDynamicTableSource implements ScanTableSource, SupportsProjecti
         String[] keyNames = new String[keysLen];
         for (int i = 0; i < keyNames.length; ++i) {
             int[] innerKeyArr = context.getKeys()[i];
-            Preconditions.checkArgument(innerKeyArr.length == 1, "JDBC only support non-nested look up keys");
+            Preconditions.checkArgument(innerKeyArr.length == 1, "Kudu only support non-nested look up keys");
             keyNames[i] = this.physicalSchema.getFieldNames()[innerKeyArr[0]];
         }
         RowDataLookupFunction rowDataLookupFunction = RowDataLookupFunction.Builder.options()
