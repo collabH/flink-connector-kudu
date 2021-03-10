@@ -88,8 +88,6 @@ public abstract class BaseKuduLookupFunction<T> extends TableFunction<T> {
             try {
                 List<KuduFilterInfo> kuduFilterInfos = buildKuduFilterInfo(keys);
                 this.kuduReader.setTableFilters(kuduFilterInfos);
-                this.kuduReader.setTableProjections(ArrayUtils.isNotEmpty(projectedFields) ? Arrays.asList(projectedFields) : null);
-
                 KuduInputSplit[] inputSplits = kuduReader.createInputSplits(1);
                 ArrayList<T> rows = new ArrayList<>();
                 for (KuduInputSplit inputSplit : inputSplits) {
@@ -150,6 +148,7 @@ public abstract class BaseKuduLookupFunction<T> extends TableFunction<T> {
             context.getMetricGroup().addGroup("kudu.lookup").gauge("keys", new IntegerGauge(this.keyCount));
             this.kuduReader = new KuduReader<T>(this.tableInfo, this.kuduReaderConfig, this.convertor);
             // 构造缓存用于缓存kudu数据
+            this.kuduReader.setTableProjections(ArrayUtils.isNotEmpty(projectedFields) ? Arrays.asList(projectedFields) : null);
             this.cache = this.cacheMaxSize == -1 || this.cacheExpireMs == -1 ? null : Caffeine.newBuilder()
                     .expireAfterWrite(this.cacheExpireMs, TimeUnit.MILLISECONDS)
                     .maximumSize(this.cacheMaxSize)

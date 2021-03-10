@@ -73,10 +73,11 @@ public class KuduTableUtils {
 
     public static KuduTableInfo createTableInfo(String tableName, TableSchema schema, Map<String, String> props) {
         // kudu主键或者table主键存在即新创建tableInfo
-        boolean createIfMissing = props.containsKey(KUDU_PRIMARY_KEY_COLS.key()) || Objects.nonNull(schema.getPrimaryKey());
+        boolean createIfMissing = props.containsKey(KUDU_PRIMARY_KEY_COLS.key()) || schema.getPrimaryKey().isPresent();
         boolean isHashPartition = props.containsKey(KUDU_HASH_COLS.key());
         boolean isRangePartition = props.containsKey(KUDU_RANGE_PARTITION_RULE.key());
         KuduTableInfo tableInfo = KuduTableInfo.forTable(tableName);
+
 
         if (createIfMissing) {
 

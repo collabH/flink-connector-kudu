@@ -91,8 +91,8 @@ public class NewFeatureTest {
     @Ignore
     public void testLookUpFunction() {
         tableEnv.useCatalog(EnvironmentSettings.DEFAULT_BUILTIN_CATALOG);
-        tableEnv.executeSql("create table test_Replice_kudu(id bigint,created_at string,name string)with(" +
-                "'connector.type'='kudu','kudu.table'='test_Replice_kudu','kudu.masters'='cdh01:7051,cdh02:7051,cdh03:7051','kudu.lookup.cache.max-rows'='300','kudu.lookup.cache.ttl'='300000','kudu.primary-key-columns'='id')");
+        tableEnv.executeSql("create table test_Replice_kudu(id bigint,created_at string)with(" +
+                "'connector'='kudu','kudu.table'='test_Replice_kudu','kudu.masters'='cdh01:7051,cdh02:7051,cdh03:7051','kudu.lookup.cache.max-rows'='300','kudu.lookup.cache.ttl'='300000')");
 
         tableEnv.executeSql("create table kafka_source_employment_test_user(id bigint,\nusername STRING,\npassword STRING,\nbirthday STRING,primary key(id) NOT ENFORCED," +
                 " proctime as proctime())\nwith('connector'='kafka',\n'topic'='common_test.employment_test.user',\n'properties.bootstrap.servers'='cdh04:9092,cdh05:9092,cdh06:9092',\n'properties.group.id'='kafka_source_employment_test_groups',\n'scan.startup.mode'= 'earliest-offset',\n'format'='debezium-json')");
@@ -104,7 +104,6 @@ public class NewFeatureTest {
         tableEnv.executeSql("CREATE TABLE print_table(\n" +
                 " id bigint,\n" +
                 " created_at STRING,\n" +
-                " name STRING,\n" +
                 " username STRING,\n" +
                 " password STRING,\n" +
                 " birthday STRING\n" +
@@ -112,11 +111,11 @@ public class NewFeatureTest {
                 " 'connector' = 'print'\n" +
                 ")");
 
-//        tableEnv.executeSql("insert into print_table (select kafka_source_employment_test_user.id as id,test_Replice_kudu.created_at,test_Replice_kudu.name,username,password,birthday from kafka_source_employment_test_user left join " +
-//                "test_Replice_kudu FOR SYSTEM_TIME AS OF kafka_source_employment_test_user.proctime on test_Replice_kudu.id =kafka_source_employment_test_user.id)").print();
+        tableEnv.executeSql("insert into print_table (select kafka_source_employment_test_user.id as id,test_Replice_kudu.created_at,username,password,birthday from kafka_source_employment_test_user left join " +
+                "test_Replice_kudu FOR SYSTEM_TIME AS OF kafka_source_employment_test_user.proctime on test_Replice_kudu.id =kafka_source_employment_test_user.id)").print();
 
-        tableEnv.executeSql("insert into print_table (select kafka_source_employment_test_user.id as id,test_Replice_kudu.created_at,test_Replice_kudu.name,username,password,birthday from kafka_source_employment_test_user left join " +
-                "test_Replice_kudu on test_Replice_kudu.id =kafka_source_employment_test_user.id)").print();
+//        tableEnv.executeSql("insert into print_table (select kafka_source_employment_test_user.id as id,test_Replice_kudu.created_at,test_Replice_kudu.name,username,password,birthday from kafka_source_employment_test_user left join " +
+//                "test_Replice_kudu on test_Replice_kudu.id =kafka_source_employment_test_user.id)").print();
 
     }
 
