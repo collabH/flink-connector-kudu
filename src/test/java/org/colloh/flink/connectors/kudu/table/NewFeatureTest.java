@@ -58,7 +58,7 @@ public class NewFeatureTest {
 //        statementSet.addInsertSql("insert into test_Replice_kudu values(9,'2020-06-01','hsm')");
 //        statementSet.addInsertSql("insert into test_Replice_kudu values(10,'2021-07-01','hsm')");
 //        statementSet.addInsertSql("insert into test_Replice_kudu values(11,'2020-05-03','hsm')");
-        statementSet.addInsertSql("insert into test_Replice_kudu values(10,'2021-05-03','1hsm1')");
+        statementSet.addInsertSql("insert into test_Replice_kudu values(11,'2021-05-03','1hsm1')");
         JobExecutionResult jobExecutionResult = statementSet.execute().getJobClient()
                 .get()
                 .getJobExecutionResult()
@@ -84,7 +84,7 @@ public class NewFeatureTest {
         tableEnv.useCatalog(EnvironmentSettings.DEFAULT_BUILTIN_CATALOG);
         tableEnv.executeSql("create table test_Replice_kudu(id bigint,created_at string,name string,proctime as proctime())with(" +
                 "'connector'='kudu','kudu.table'='test_Replice_kudu','kudu.masters'='cdh01:7051,cdh02:7051,cdh03:7051','kudu.scan.row-size'='2','kudu.primary-key-columns'='id')");
-        tableEnv.executeSql("select * from test_Replice_kudu where id = 4").print();
+        tableEnv.executeSql("select * from test_Replice_kudu").print();
     }
 
     @Test

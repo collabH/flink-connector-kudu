@@ -99,12 +99,7 @@ public class KuduDynamicTableSource implements ScanTableSource, SupportsProjecti
 
     @Override
     public ChangelogMode getChangelogMode() {
-        return ChangelogMode.newBuilder()
-                .addContainedKind(RowKind.INSERT)
-                .addContainedKind(RowKind.UPDATE_AFTER)
-                .addContainedKind(RowKind.UPDATE_BEFORE)
-                .addContainedKind(RowKind.DELETE)
-                .build();
+        return ChangelogMode.insertOnly();
     }
 
     @Override
