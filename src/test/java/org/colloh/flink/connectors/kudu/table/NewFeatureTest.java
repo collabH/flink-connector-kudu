@@ -111,11 +111,11 @@ public class NewFeatureTest {
                 " 'connector' = 'print'\n" +
                 ")");
 
-        tableEnv.executeSql("insert into print_table (select kafka_source_employment_test_user.id as id,test_Replice_kudu.created_at,username,password,birthday from kafka_source_employment_test_user left join " +
-                "test_Replice_kudu FOR SYSTEM_TIME AS OF kafka_source_employment_test_user.proctime on test_Replice_kudu.id =kafka_source_employment_test_user.id)").print();
+//        tableEnv.executeSql("insert into print_table (select kafka_source_employment_test_user.id as id,test_Replice_kudu.created_at,username,password,birthday from kafka_source_employment_test_user left join " +
+//                "test_Replice_kudu FOR SYSTEM_TIME AS OF kafka_source_employment_test_user.proctime on test_Replice_kudu.id =kafka_source_employment_test_user.id)").print();
 
-//        tableEnv.executeSql("insert into print_table (select kafka_source_employment_test_user.id as id,test_Replice_kudu.created_at,test_Replice_kudu.name,username,password,birthday from kafka_source_employment_test_user left join " +
-//                "test_Replice_kudu on test_Replice_kudu.id =kafka_source_employment_test_user.id)").print();
+        tableEnv.executeSql("insert into print_table (select kafka_source_employment_test_user.id as id,test_Replice_kudu.created_at,test_Replice_kudu.name,username,password,birthday from kafka_source_employment_test_user left join " +
+                "test_Replice_kudu on test_Replice_kudu.id =kafka_source_employment_test_user.id)").print();
 
     }
 

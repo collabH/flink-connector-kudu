@@ -129,6 +129,7 @@ public class RowDataUpsertOperationMapper extends AbstractSingleOperationMapper<
 
     @Override
     public Optional<Operation> createBaseOperation(RowData input, KuduTable table) {
-        return Optional.of(input.getRowKind() == RowKind.DELETE ? table.newDelete() : table.newUpsert());
+        return Optional.of(input.getRowKind().equals(RowKind.INSERT)
+                || input.getRowKind().equals(RowKind.UPDATE_AFTER) ? table.newUpsert() : table.newDelete());
     }
 }
