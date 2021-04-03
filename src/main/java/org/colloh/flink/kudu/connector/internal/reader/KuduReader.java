@@ -64,6 +64,8 @@ public class KuduReader<T> implements AutoCloseable {
         this.tableProjections = tableProjections;
         this.rowResultConvertor = rowResultConvertor;
         this.client = obtainClient();
+        // 支持ignore operation
+        this.client.supportsIgnoreOperations();
         this.session = obtainSession();
         this.table = obtainTable();
     }
@@ -77,7 +79,8 @@ public class KuduReader<T> implements AutoCloseable {
     }
 
     private KuduClient obtainClient() {
-        return new KuduClient.KuduClientBuilder(readerConfig.getMasters()).build();
+        return new KuduClient.KuduClientBuilder(readerConfig.getMasters())
+                .build();
     }
 
     private KuduSession obtainSession() {

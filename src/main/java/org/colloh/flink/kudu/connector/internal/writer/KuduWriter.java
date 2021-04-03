@@ -64,6 +64,8 @@ public class KuduWriter<T> implements AutoCloseable {
         this.failureHandler = failureHandler;
 
         this.client = obtainClient();
+        // 支持ignore operation
+        this.client.supportsIgnoreOperations();
         this.session = obtainSession();
         this.table = obtainTable();
         this.operationMapper = operationMapper;
