@@ -157,7 +157,7 @@ public class KuduDynamicTableSource implements ScanTableSource, SupportsProjecti
 
     @Override
     public void applyLimit(long limit) {
-        configBuilder.setRowLimit((int) limit);
+        this.configBuilder=this.configBuilder.setRowLimit((int) limit);
     }
 
     @Override
