@@ -81,7 +81,8 @@ public class KuduReaderConfig implements Serializable {
         }
 
         public Builder setRowLimit(int rowLimit) {
-            return new Builder(masters, rowLimit);
+            this.rowLimit=rowLimit;
+            return this;
         }
 
         public KuduReaderConfig build() {
