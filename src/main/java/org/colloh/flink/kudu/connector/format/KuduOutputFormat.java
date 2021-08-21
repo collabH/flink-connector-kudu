@@ -49,17 +49,17 @@ public class KuduOutputFormat<IN> extends RichOutputFormat<IN> implements Checkp
     private final KuduTableInfo tableInfo;
     private final KuduWriterConfig writerConfig;
     private final KuduFailureHandler failureHandler;
-    private final AbstractSingleOperationMapper<IN> opsMapper;
+    private final KuduOperationMapper<IN> opsMapper;
 
     private transient KuduWriter<IN> kuduWriter;
 
     public KuduOutputFormat(KuduWriterConfig writerConfig, KuduTableInfo tableInfo,
-                            AbstractSingleOperationMapper<IN> opsMapper) {
+                            KuduOperationMapper<IN> opsMapper) {
         this(writerConfig, tableInfo, opsMapper, new DefaultKuduFailureHandler());
     }
 
     public KuduOutputFormat(KuduWriterConfig writerConfig, KuduTableInfo tableInfo,
-                            AbstractSingleOperationMapper<IN> opsMapper, KuduFailureHandler failureHandler) {
+                            KuduOperationMapper<IN> opsMapper, KuduFailureHandler failureHandler) {
         this.tableInfo = checkNotNull(tableInfo, "tableInfo could not be null");
         this.writerConfig = checkNotNull(writerConfig, "config could not be null");
         this.opsMapper = checkNotNull(opsMapper, "opsMapper could not be null");

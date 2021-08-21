@@ -52,7 +52,7 @@ public class KuduSink<IN> extends RichSinkFunction<IN> implements CheckpointedFu
     private final KuduTableInfo tableInfo;
     private final KuduWriterConfig writerConfig;
     private final KuduFailureHandler failureHandler;
-    private final AbstractSingleOperationMapper<IN> opsMapper;
+    private final KuduOperationMapper<IN> opsMapper;
     private transient KuduWriter<IN> kuduWriter;
 
     /**
@@ -64,7 +64,7 @@ public class KuduSink<IN> extends RichSinkFunction<IN> implements CheckpointedFu
      * @param tableInfo    Table information for the target table
      * @param opsMapper    Mapping logic from inputs to Kudu operations
      */
-    public KuduSink(KuduWriterConfig writerConfig, KuduTableInfo tableInfo, AbstractSingleOperationMapper<IN> opsMapper) {
+    public KuduSink(KuduWriterConfig writerConfig, KuduTableInfo tableInfo, KuduOperationMapper<IN> opsMapper) {
         this(writerConfig, tableInfo, opsMapper, new DefaultKuduFailureHandler());
     }
 
@@ -78,7 +78,7 @@ public class KuduSink<IN> extends RichSinkFunction<IN> implements CheckpointedFu
      * @param opsMapper      Mapping logic from inputs to Kudu operations
      * @param failureHandler Custom failure handler instance
      */
-    public KuduSink(KuduWriterConfig writerConfig, KuduTableInfo tableInfo, AbstractSingleOperationMapper<IN> opsMapper,
+    public KuduSink(KuduWriterConfig writerConfig, KuduTableInfo tableInfo, KuduOperationMapper<IN> opsMapper,
                     KuduFailureHandler failureHandler) {
         this.tableInfo = checkNotNull(tableInfo, "tableInfo could not be null");
         this.writerConfig = checkNotNull(writerConfig, "config could not be null");

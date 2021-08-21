@@ -119,8 +119,8 @@ public class RowDataUpsertOperationMapper extends AbstractSingleOperationMapper<
                 if (timestampPrecision < MIN_TIMESTAMP_PRECISION || timestampPrecision > MAX_TIMESTAMP_PRECISION) {
                     throw new UnsupportedOperationException(
                             String.format("The precision %s of TIMESTAMP type is out of the range [%s, %s] supported " +
-                                    "by " +
-                                    "kudu connector", timestampPrecision, MIN_TIMESTAMP_PRECISION,
+                                            "by " +
+                                            "kudu connector", timestampPrecision, MIN_TIMESTAMP_PRECISION,
                                     MAX_TIMESTAMP_PRECISION));
                 }
                 return input.getTimestamp(i, timestampPrecision).toTimestamp();
@@ -133,6 +133,6 @@ public class RowDataUpsertOperationMapper extends AbstractSingleOperationMapper<
     public Optional<Operation> createBaseOperation(RowData input, KuduTable table) {
         boolean isUpsert = input.getRowKind().equals(RowKind.INSERT)
                 || input.getRowKind().equals(RowKind.UPDATE_AFTER) || input.getRowKind().equals(RowKind.UPDATE_BEFORE);
-        return Optional.of(isUpsert ? table.newUpsert() : table.newDelete());
+        return Optional.of(isUpsert ? table.newUpsert() : table.newDeleteIgnore());
     }
 }

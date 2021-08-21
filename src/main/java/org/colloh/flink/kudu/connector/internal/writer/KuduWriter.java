@@ -53,19 +53,19 @@ public class KuduWriter<T> implements AutoCloseable {
     private final KuduTableInfo tableInfo;
     private final KuduWriterConfig writerConfig;
     private final KuduFailureHandler failureHandler;
-    private final AbstractSingleOperationMapper<T> operationMapper;
+    private final KuduOperationMapper<T> operationMapper;
 
     private final transient KuduClient client;
     private final transient KuduSession session;
     private final transient KuduTable table;
 
     public KuduWriter(KuduTableInfo tableInfo, KuduWriterConfig writerConfig,
-                      AbstractSingleOperationMapper<T> operationMapper) throws IOException {
+                      KuduOperationMapper<T> operationMapper) throws IOException {
         this(tableInfo, writerConfig, operationMapper, new DefaultKuduFailureHandler());
     }
 
     public KuduWriter(KuduTableInfo tableInfo, KuduWriterConfig writerConfig,
-                      AbstractSingleOperationMapper<T> operationMapper,
+                      KuduOperationMapper<T> operationMapper,
                       KuduFailureHandler failureHandler) throws IOException {
         this.tableInfo = tableInfo;
         this.writerConfig = writerConfig;
@@ -105,23 +105,6 @@ public class KuduWriter<T> implements AutoCloseable {
         checkAsyncErrors();
 
         for (Operation operation : operationMapper.createOperations(input, table)) {
-            // 如果为delete一定保证主键一定在kudu里存在
-            if (operation instanceof Delete) {
-                KuduScanner.KuduScannerBuilder scannerBuilder = client.newScannerBuilder(table);
-                // 找到主键的index
-                List<ColumnSchema> primaryKeyColumns = table.getSchema().getPrimaryKeyColumns();
-                for (ColumnSchema primaryKeyColumn : primaryKeyColumns) {
-                    int primaryKeyColumnIndex = table.getSchema().getColumnIndex(primaryKeyColumn.getName());
-                    Object value = operationMapper.getField(input, primaryKeyColumnIndex);
-                    scannerBuilder.addPredicate(KuduPredicate.newComparisonPredicate(primaryKeyColumn,
-                            KuduPredicate.ComparisonOp.EQUAL, value));
-                }
-                KuduScanner scanner = scannerBuilder.build();
-                // 如果根据主键查不到数据则不需要delete
-                if (!scanner.hasMoreRows()) {
-                    return;
-                }
-            }
             checkErrors(session.apply(operation));
         }
     }
