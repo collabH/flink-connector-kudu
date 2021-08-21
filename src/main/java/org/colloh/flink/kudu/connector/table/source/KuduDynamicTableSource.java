@@ -55,7 +55,7 @@ public class KuduDynamicTableSource implements ScanTableSource, SupportsProjecti
 
     private static final Logger LOG = LoggerFactory.getLogger(KuduDynamicTableSource.class);
 
-    private final KuduReaderConfig.Builder configBuilder;
+    private KuduReaderConfig.Builder configBuilder;
     private final KuduTableInfo tableInfo;
     private TableSchema physicalSchema;
     private final String[] projectedFields;
@@ -157,7 +157,7 @@ public class KuduDynamicTableSource implements ScanTableSource, SupportsProjecti
 
     @Override
     public void applyLimit(long limit) {
-        configBuilder.setRowLimit((int) limit);
+       this.configBuilder=this.configBuilder.setRowLimit((int) limit);
     }
 
     @Override
