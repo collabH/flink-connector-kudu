@@ -21,6 +21,7 @@ import org.apache.flink.configuration.Configuration;
 import org.colloh.flink.kudu.connector.internal.KuduTableInfo;
 import org.colloh.flink.kudu.connector.internal.failure.DefaultKuduFailureHandler;
 import org.colloh.flink.kudu.connector.internal.failure.KuduFailureHandler;
+import org.colloh.flink.kudu.connector.internal.writer.AbstractSingleOperationMapper;
 import org.colloh.flink.kudu.connector.internal.writer.KuduOperationMapper;
 import org.colloh.flink.kudu.connector.internal.writer.KuduWriter;
 import org.colloh.flink.kudu.connector.internal.writer.KuduWriterConfig;
@@ -51,23 +52,25 @@ public class KuduSink<IN> extends RichSinkFunction<IN> implements CheckpointedFu
     private final KuduTableInfo tableInfo;
     private final KuduWriterConfig writerConfig;
     private final KuduFailureHandler failureHandler;
-    private final KuduOperationMapper<IN> opsMapper;
+    private final AbstractSingleOperationMapper<IN> opsMapper;
     private transient KuduWriter<IN> kuduWriter;
 
     /**
-     * Creates a new {@link KuduSink} that will execute operations against the specified Kudu table (defined in {@link KuduTableInfo})
+     * Creates a new {@link KuduSink} that will execute operations against the specified Kudu table (defined in
+     * {@link KuduTableInfo})
      * for the incoming stream elements.
      *
      * @param writerConfig Writer configuration
      * @param tableInfo    Table information for the target table
      * @param opsMapper    Mapping logic from inputs to Kudu operations
      */
-    public KuduSink(KuduWriterConfig writerConfig, KuduTableInfo tableInfo, KuduOperationMapper<IN> opsMapper) {
+    public KuduSink(KuduWriterConfig writerConfig, KuduTableInfo tableInfo, AbstractSingleOperationMapper<IN> opsMapper) {
         this(writerConfig, tableInfo, opsMapper, new DefaultKuduFailureHandler());
     }
 
     /**
-     * Creates a new {@link KuduSink} that will execute operations against the specified Kudu table (defined in {@link KuduTableInfo})
+     * Creates a new {@link KuduSink} that will execute operations against the specified Kudu table (defined in
+     * {@link KuduTableInfo})
      * for the incoming stream elements.
      *
      * @param writerConfig   Writer configuration
@@ -75,7 +78,8 @@ public class KuduSink<IN> extends RichSinkFunction<IN> implements CheckpointedFu
      * @param opsMapper      Mapping logic from inputs to Kudu operations
      * @param failureHandler Custom failure handler instance
      */
-    public KuduSink(KuduWriterConfig writerConfig, KuduTableInfo tableInfo, KuduOperationMapper<IN> opsMapper, KuduFailureHandler failureHandler) {
+    public KuduSink(KuduWriterConfig writerConfig, KuduTableInfo tableInfo, AbstractSingleOperationMapper<IN> opsMapper,
+                    KuduFailureHandler failureHandler) {
         this.tableInfo = checkNotNull(tableInfo, "tableInfo could not be null");
         this.writerConfig = checkNotNull(writerConfig, "config could not be null");
         this.opsMapper = checkNotNull(opsMapper, "opsMapper could not be null");

@@ -18,6 +18,8 @@ package org.colloh.flink.kudu.connector.internal.writer;
 
 import org.apache.flink.annotation.PublicEvolving;
 import org.apache.flink.table.data.binary.BinaryStringData;
+import org.apache.kudu.ColumnSchema;
+import org.apache.kudu.client.Delete;
 import org.apache.kudu.client.KuduTable;
 import org.apache.kudu.client.Operation;
 import org.apache.kudu.client.PartialRow;
@@ -64,7 +66,8 @@ public abstract class AbstractSingleOperationMapper<T> implements KuduOperationM
 
     public Optional<Operation> createBaseOperation(T input, KuduTable table) {
         if (operation == null) {
-            throw new UnsupportedOperationException("createBaseOperation must be overridden if no operation specified in constructor");
+            throw new UnsupportedOperationException("createBaseOperation must be overridden if no operation specified" +
+                    " in constructor");
         }
         switch (operation) {
             case INSERT:
@@ -89,7 +92,6 @@ public abstract class AbstractSingleOperationMapper<T> implements KuduOperationM
 
         Operation operation = operationOpt.get();
         PartialRow partialRow = operation.getRow();
-
         for (int i = 0; i < columnNames.length; i++) {
             Object field = getField(input, i);
             partialRow.addObject(columnNames[i], field);

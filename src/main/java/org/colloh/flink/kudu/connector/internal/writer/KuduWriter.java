@@ -18,6 +18,10 @@ package org.colloh.flink.kudu.connector.internal.writer;
 
 import org.apache.flink.annotation.Internal;
 import org.apache.flink.annotation.VisibleForTesting;
+import org.apache.kudu.ColumnSchema;
+import org.apache.kudu.client.Delete;
+import org.apache.kudu.client.KuduPredicate;
+import org.apache.kudu.client.KuduScanner;
 import org.colloh.flink.kudu.connector.internal.KuduTableInfo;
 import org.colloh.flink.kudu.connector.internal.failure.DefaultKuduFailureHandler;
 import org.colloh.flink.kudu.connector.internal.failure.KuduFailureHandler;
@@ -38,6 +42,7 @@ import java.util.List;
 
 /**
  * todo write kudu table config
+ *
  * @param <T>
  */
 @Internal
@@ -48,24 +53,27 @@ public class KuduWriter<T> implements AutoCloseable {
     private final KuduTableInfo tableInfo;
     private final KuduWriterConfig writerConfig;
     private final KuduFailureHandler failureHandler;
-    private final KuduOperationMapper<T> operationMapper;
+    private final AbstractSingleOperationMapper<T> operationMapper;
 
     private final transient KuduClient client;
     private final transient KuduSession session;
     private final transient KuduTable table;
 
-    public KuduWriter(KuduTableInfo tableInfo, KuduWriterConfig writerConfig, KuduOperationMapper<T> operationMapper) throws IOException {
+    public KuduWriter(KuduTableInfo tableInfo, KuduWriterConfig writerConfig,
+                      AbstractSingleOperationMapper<T> operationMapper) throws IOException {
         this(tableInfo, writerConfig, operationMapper, new DefaultKuduFailureHandler());
     }
 
-    public KuduWriter(KuduTableInfo tableInfo, KuduWriterConfig writerConfig, KuduOperationMapper<T> operationMapper, KuduFailureHandler failureHandler) throws IOException {
+    public KuduWriter(KuduTableInfo tableInfo, KuduWriterConfig writerConfig,
+                      AbstractSingleOperationMapper<T> operationMapper,
+                      KuduFailureHandler failureHandler) throws IOException {
         this.tableInfo = tableInfo;
         this.writerConfig = writerConfig;
         this.failureHandler = failureHandler;
 
         this.client = obtainClient();
-        // 支持ignore operation
-        this.client.supportsIgnoreOperations();
+        // 支持ignore operation kudu1.14支持
+//        this.client.supportsIgnoreOperations();
         this.session = obtainSession();
         this.table = obtainTable();
         this.operationMapper = operationMapper;
@@ -97,6 +105,23 @@ public class KuduWriter<T> implements AutoCloseable {
         checkAsyncErrors();
 
         for (Operation operation : operationMapper.createOperations(input, table)) {
+            // 如果为delete一定保证主键一定在kudu里存在
+            if (operation instanceof Delete) {
+                KuduScanner.KuduScannerBuilder scannerBuilder = client.newScannerBuilder(table);
+                // 找到主键的index
+                List<ColumnSchema> primaryKeyColumns = table.getSchema().getPrimaryKeyColumns();
+                for (ColumnSchema primaryKeyColumn : primaryKeyColumns) {
+                    int primaryKeyColumnIndex = table.getSchema().getColumnIndex(primaryKeyColumn.getName());
+                    Object value = operationMapper.getField(input, primaryKeyColumnIndex);
+                    scannerBuilder.addPredicate(KuduPredicate.newComparisonPredicate(primaryKeyColumn,
+                            KuduPredicate.ComparisonOp.EQUAL, value));
+                }
+                KuduScanner scanner = scannerBuilder.build();
+                // 如果根据主键查不到数据则不需要delete
+                if (!scanner.hasMoreRows()) {
+                    return;
+                }
+            }
             checkErrors(session.apply(operation));
         }
     }
