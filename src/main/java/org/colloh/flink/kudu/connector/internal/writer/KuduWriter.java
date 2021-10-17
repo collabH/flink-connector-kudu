@@ -113,13 +113,14 @@ public class KuduWriter<T> implements AutoCloseable {
                 for (ColumnSchema primaryKeyColumn : primaryKeyColumns) {
                     int primaryKeyColumnIndex = table.getSchema().getColumnIndex(primaryKeyColumn.getName());
                     Object value = operationMapper.getField(input, primaryKeyColumnIndex);
+                    log.error(String.format("delete operation, column name: %s, value: %s", primaryKeyColumn.getName(), value));
                     scannerBuilder.addPredicate(KuduPredicate.newComparisonPredicate(primaryKeyColumn,
                             KuduPredicate.ComparisonOp.EQUAL, value));
                 }
                 KuduScanner scanner = scannerBuilder.build();
                 // 如果根据主键查不到数据则不需要delete
-                if (!scanner.hasMoreRows()) {
-                    return;
+                if (!(scanner.hasMoreRows() && scanner.nextRows().getNumRows() > 0)) {
+                    continue;
                 }
             }
             checkErrors(session.apply(operation));
