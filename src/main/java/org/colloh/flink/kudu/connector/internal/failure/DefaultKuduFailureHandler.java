@@ -16,7 +16,10 @@
  */
 package org.colloh.flink.kudu.connector.internal.failure;
 
+    import org.apache.kudu.client.Bytes;
+import org.apache.kudu.client.Operation;
 import org.apache.kudu.client.RowError;
+import org.apache.kudu.client.Status;
 
 import java.io.IOException;
 import java.util.List;
@@ -30,10 +33,22 @@ public class DefaultKuduFailureHandler implements KuduFailureHandler {
 
     @Override
     public void onFailure(List<RowError> failure) throws IOException {
+
         String errors = failure.stream()
-                .map(error -> error.toString() + System.lineSeparator())
+                .map(error -> printFail(error) + System.lineSeparator())
                 .collect(Collectors.joining());
 
         throw new IOException("Error while sending value. \n " + errors);
     }
+
+    public String  printFail(RowError rowError){
+        Operation operation = rowError.getOperation();
+        return "-- Row error for primary key=" + Bytes.pretty(operation.getRow().encodePrimaryKey()) +
+                ", operation class: " + operation.getClass().getName() +
+                ", server=" + rowError.getTsUUID() +
+                ", status=" + rowError.getErrorStatus() +
+                ", data=" + operation.getRow().toString()
+                ;
+    }
+
 }

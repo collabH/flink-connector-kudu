@@ -2,11 +2,14 @@
 
 * 基于Apache-Bahir-Kudu-Connector改造而来的满足公司内部使用的Kudu Connector，支持特性Range分区、定义Hash分桶数、支持Flink1.11.x动态数据源等，改造后已贡献部分功能给社区。
 
-# 注意点
+# Tag版本
 
-* 目前使用kudu1.13之前的版本，kudu不支持delete ignore,因此在数据delete的时候该条数据一定要存在否则会出现`not primary 
+* v1.0.0使用kudu-client:1.10.0
+  * 注意点:目前使用kudu1.13之前的版本，kudu不支持delete ignore,因此在数据delete的时候该条数据一定要存在否则会出现`not primary 
   key`异常，目前的connector中解决方法为如果判断是Delete，则根据主键查询，查询不到数据则不进行删除(这样存在的问题是Delete操作需要一次查询IO，个人建议升级Kudu版本至1.14,
   改造RowDataUpsertOperationMapper将newDelete改成newDeleteIgnore即可。)
+* v1.1.0使用kudu-client:1.14.0
+  * 不存在v1.0.0问题
 
 # 使用姿势
 
