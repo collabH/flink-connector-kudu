@@ -66,7 +66,7 @@ public class KuduWriterConfig implements Serializable {
      */
     public static class Builder {
         private final String masters;
-        private FlushMode flushMode = FlushMode.AUTO_FLUSH_SYNC;
+        private FlushMode flushMode = FlushMode.AUTO_FLUSH_BACKGROUND;
 
         private Builder(String masters) {
             this.masters = masters;

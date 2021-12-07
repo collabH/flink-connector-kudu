@@ -105,24 +105,6 @@ public class KuduWriter<T> implements AutoCloseable {
         checkAsyncErrors();
 
         for (Operation operation : operationMapper.createOperations(input, table)) {
-            // 如果为delete一定保证主键一定在kudu里存在
-            if (operation instanceof Delete) {
-                KuduScanner.KuduScannerBuilder scannerBuilder = client.newScannerBuilder(table);
-                // 找到主键的index
-                List<ColumnSchema> primaryKeyColumns = table.getSchema().getPrimaryKeyColumns();
-                for (ColumnSchema primaryKeyColumn : primaryKeyColumns) {
-                    int primaryKeyColumnIndex = table.getSchema().getColumnIndex(primaryKeyColumn.getName());
-                    Object value = operationMapper.getField(input, primaryKeyColumnIndex);
-                    log.error(String.format("delete operation, column name: %s, value: %s", primaryKeyColumn.getName(), value));
-                    scannerBuilder.addPredicate(KuduPredicate.newComparisonPredicate(primaryKeyColumn,
-                            KuduPredicate.ComparisonOp.EQUAL, value));
-                }
-                KuduScanner scanner = scannerBuilder.build();
-                // 如果根据主键查不到数据则不需要delete
-                if (!(scanner.hasMoreRows() && scanner.nextRows().getNumRows() > 0)) {
-                    continue;
-                }
-            }
             checkErrors(session.apply(operation));
         }
     }
