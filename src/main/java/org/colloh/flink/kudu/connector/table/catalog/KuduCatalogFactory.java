@@ -18,22 +18,20 @@
 
 package org.colloh.flink.kudu.connector.table.catalog;
 
+import org.apache.commons.compress.utils.Sets;
 import org.apache.flink.annotation.Internal;
+import org.apache.flink.configuration.ConfigOption;
 import org.apache.flink.table.catalog.Catalog;
-import org.apache.flink.table.descriptors.DescriptorProperties;
 import org.apache.flink.table.factories.CatalogFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.Set;
 
-import static org.colloh.flink.kudu.connector.table.KuduDynamicTableSourceSinkFactory.KUDU;
+import static org.apache.flink.table.catalog.CommonCatalogOptions.CATALOG_TYPE;
+import static org.colloh.flink.kudu.connector.table.KuduDynamicTableSourceSinkFactory.IDENTIFIER;
 import static org.colloh.flink.kudu.connector.table.KuduDynamicTableSourceSinkFactory.KUDU_MASTERS;
-import static org.apache.flink.table.descriptors.CatalogDescriptorValidator.CATALOG_PROPERTY_VERSION;
-import static org.apache.flink.table.descriptors.CatalogDescriptorValidator.CATALOG_TYPE;
+import static org.colloh.flink.kudu.connector.table.KuduDynamicTableSourceSinkFactory.KUDU_TABLE;
 
 /**
  * Factory for {@link KuduCatalog}.
@@ -44,34 +42,24 @@ public class KuduCatalogFactory implements CatalogFactory {
     private static final Logger LOG = LoggerFactory.getLogger(KuduCatalogFactory.class);
 
     @Override
-    public Map<String, String> requiredContext() {
-        Map<String, String> context = new HashMap<>();
-        context.put(CATALOG_TYPE, KUDU);
-        context.put(CATALOG_PROPERTY_VERSION, "1"); // backwards compatibility
-        return context;
+    public Catalog createCatalog(Context context) {
+        String kuduMasters = context.getConfiguration().get(KUDU_MASTERS);
+        String catalogName = context.getName();
+        return new KuduCatalog(catalogName, kuduMasters);
     }
 
     @Override
-    public List<String> supportedProperties() {
-        List<String> properties = new ArrayList<>();
-
-        properties.add(KUDU_MASTERS.key());
-
-        return properties;
+    public String factoryIdentifier() {
+        return IDENTIFIER;
     }
 
     @Override
-    public Catalog createCatalog(String name, Map<String, String> properties) {
-        final DescriptorProperties descriptorProperties = getValidatedProperties(properties);
-        return new KuduCatalog(name,
-                descriptorProperties.getString(KUDU_MASTERS.key()));
+    public Set<ConfigOption<?>> requiredOptions() {
+        return Sets.newHashSet(CATALOG_TYPE, KUDU_MASTERS);
     }
 
-    private DescriptorProperties getValidatedProperties(Map<String, String> properties) {
-        final DescriptorProperties descriptorProperties = new DescriptorProperties(true);
-        descriptorProperties.putProperties(properties);
-        descriptorProperties.validateString(KUDU_MASTERS.key(), false);
-        return descriptorProperties;
+    @Override
+    public Set<ConfigOption<?>> optionalOptions() {
+        return Sets.newHashSet(KUDU_TABLE);
     }
-
 }
