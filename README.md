@@ -10,6 +10,11 @@
   改造RowDataUpsertOperationMapper将newDelete改成newDeleteIgnore即可。)
 * v1.1.0使用kudu-client:1.14.0
   * 不存在v1.0.0问题
+  
+# Version
+
+* branch:feature_support_with_flink113x
+  * 兼容Flink1.13.x主要改造点为KuduCatalogFactory，1.13.x过期的`TableSchema`类并未修改(不影响使用)
 
 # 使用姿势
 
