@@ -62,4 +62,21 @@ public class KuduCatalogFactory implements CatalogFactory {
     public Set<ConfigOption<?>> optionalOptions() {
         return Sets.newHashSet(KUDU_TABLE);
     }
+    
+        @Override
+    public Map<String, String> requiredContext() {
+        Map<String, String> context = new HashMap<>();
+        context.put(CATALOG_TYPE, KUDU);
+        context.put(CATALOG_PROPERTY_VERSION, "1"); // backwards compatibility
+        return context;
+    }
+
+    @Override
+    public List<String> supportedProperties() {
+        List<String> properties = new ArrayList<>();
+
+        properties.add(KUDU_MASTERS.key());
+
+        return properties;
+    }
 }
