@@ -1,3 +1,4 @@
+[![flink-connector-kudu](https://github.com/collabH/flink-connector-kudu/actions/workflows/maven.yml/badge.svg?branch=master)](https://github.com/collabH/flink-connector-kudu/actions/workflows/maven.yml)
 # Kudu Connector
 
 * 基于Apache-Bahir-Kudu-Connector改造而来的满足公司内部使用的Kudu Connector，支持特性Range分区、定义Hash分桶数、支持Flink1.11.x动态数据源等，改造后已贡献部分功能给社区。
