@@ -18,6 +18,9 @@ public class RowResultRowConvertor implements RowResultConvertor<Row> {
         Row values = new Row(schema.getColumnCount());
         schema.getColumns().forEach(column -> {
             String name = column.getName();
+            if (row.isNull(name)){
+                return;
+            }
             int pos = schema.getColumnIndex(name);
             values.setField(pos, row.getObject(name));
         });

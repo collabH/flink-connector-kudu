@@ -28,7 +28,10 @@ public class RowResultRowDataConvertor implements RowResultConvertor<RowData> {
             Type type = column.getType();
             int pos = schema.getColumnIndex(name);
             if (Objects.isNull(type)) {
-                throw new IllegalArgumentException("columnName:" + name + ",type:" + type.getName() + "不支持!");
+                throw new IllegalArgumentException("columnName:" + name);
+            }
+            if (row.isNull(name)) {
+                return;
             }
             switch (type) {
                 case DECIMAL:
