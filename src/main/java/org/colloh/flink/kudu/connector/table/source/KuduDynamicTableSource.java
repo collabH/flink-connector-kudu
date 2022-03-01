@@ -31,7 +31,6 @@ import org.apache.flink.table.connector.source.abilities.SupportsLimitPushDown;
 import org.apache.flink.table.connector.source.abilities.SupportsProjectionPushDown;
 import org.apache.flink.table.expressions.ResolvedExpression;
 import org.apache.flink.table.utils.TableSchemaUtils;
-import org.apache.flink.types.RowKind;
 import org.apache.flink.util.Preconditions;
 import org.colloh.flink.kudu.connector.format.KuduRowDataInputFormat;
 import org.colloh.flink.kudu.connector.internal.KuduFilterInfo;
@@ -54,26 +53,25 @@ public class KuduDynamicTableSource implements ScanTableSource, SupportsProjecti
         SupportsLimitPushDown, LookupTableSource, SupportsFilterPushDown {
 
     private static final Logger LOG = LoggerFactory.getLogger(KuduDynamicTableSource.class);
-
-    private KuduReaderConfig.Builder configBuilder;
     private final KuduTableInfo tableInfo;
-    private TableSchema physicalSchema;
-    private final String[] projectedFields;
     private final KuduLookupOptions kuduLookupOptions;
-
     private final KuduRowDataInputFormat kuduRowDataInputFormat;
-
+    private KuduReaderConfig.Builder configBuilder;
+    private TableSchema physicalSchema;
+    private String[] projectedFields;
     private transient List<ResolvedExpression> filters;
-    private transient List<KuduFilterInfo> predicates = Lists.newArrayList();
+    private final transient List<KuduFilterInfo> predicates = Lists.newArrayList();
 
     public KuduDynamicTableSource(KuduReaderConfig.Builder configBuilder, KuduTableInfo tableInfo,
-                                  TableSchema physicalSchema, String[] projectedFields, KuduLookupOptions kuduLookupOptions) {
+                                  TableSchema physicalSchema, String[] projectedFields,
+                                  KuduLookupOptions kuduLookupOptions) {
         this.configBuilder = configBuilder;
         this.tableInfo = tableInfo;
         this.physicalSchema = physicalSchema;
         this.projectedFields = projectedFields;
-        this.kuduRowDataInputFormat = new KuduRowDataInputFormat(configBuilder.build(), new RowResultRowDataConvertor(), tableInfo,
-                predicates == null ? Collections.emptyList() : predicates,
+        this.kuduRowDataInputFormat = new KuduRowDataInputFormat(configBuilder.build(),
+                new RowResultRowDataConvertor(), tableInfo,
+                predicates,
                 projectedFields == null ? null : Lists.newArrayList(projectedFields));
         this.kuduLookupOptions = kuduLookupOptions;
     }
@@ -113,7 +111,8 @@ public class KuduDynamicTableSource implements ScanTableSource, SupportsProjecti
 
             }
         }
-        KuduRowDataInputFormat inputFormat = new KuduRowDataInputFormat(configBuilder.build(), new RowResultRowDataConvertor(), tableInfo,
+        KuduRowDataInputFormat inputFormat = new KuduRowDataInputFormat(configBuilder.build(),
+                new RowResultRowDataConvertor(), tableInfo,
                 this.predicates,
                 projectedFields == null ? null : Lists.newArrayList(projectedFields));
         return InputFormatProvider.of(inputFormat);
@@ -121,7 +120,8 @@ public class KuduDynamicTableSource implements ScanTableSource, SupportsProjecti
 
     @Override
     public DynamicTableSource copy() {
-        return new KuduDynamicTableSource(this.configBuilder, this.tableInfo, this.physicalSchema, this.projectedFields, this.kuduLookupOptions);
+        return new KuduDynamicTableSource(this.configBuilder, this.tableInfo, this.physicalSchema,
+                this.projectedFields, this.kuduLookupOptions);
     }
 
     @Override
@@ -137,7 +137,9 @@ public class KuduDynamicTableSource implements ScanTableSource, SupportsProjecti
 
     @Override
     public void applyProjection(int[][] projectedFields) {
+        // parser projectFields
         this.physicalSchema = TableSchemaUtils.projectSchema(this.physicalSchema, projectedFields);
+        this.projectedFields = physicalSchema.getFieldNames();
     }
 
     @Override
@@ -150,14 +152,15 @@ public class KuduDynamicTableSource implements ScanTableSource, SupportsProjecti
 
     @Override
     public int hashCode() {
-        int result = Objects.hash(configBuilder, tableInfo, physicalSchema, kuduLookupOptions, kuduRowDataInputFormat, filters, predicates);
+        int result = Objects.hash(configBuilder, tableInfo, physicalSchema, kuduLookupOptions, kuduRowDataInputFormat
+                , filters, predicates);
         result = 31 * result + Arrays.hashCode(projectedFields);
         return result;
     }
 
     @Override
     public void applyLimit(long limit) {
-       this.configBuilder=this.configBuilder.setRowLimit((int) limit);
+        this.configBuilder = this.configBuilder.setRowLimit((int) limit);
     }
 
     @Override
