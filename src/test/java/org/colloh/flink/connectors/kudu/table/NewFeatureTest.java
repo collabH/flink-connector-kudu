@@ -83,7 +83,10 @@ public class NewFeatureTest {
     public void testScanRowSizeConfig() {
         tableEnv.useCatalog(EnvironmentSettings.DEFAULT_BUILTIN_CATALOG);
         tableEnv.executeSql("create table test_Replice_kudu(id bigint,created_at string,name string,proctime as proctime())with(" +
-                "'connector'='kudu','kudu.table'='test_Replice_kudu','kudu.masters'='cdh01:7051,cdh02:7051,cdh03:7051','kudu.scan.row-size'='2','kudu.primary-key-columns'='id')");
+                "'connector'='kudu'," +
+                "'kudu.table'='test_Replice_kudu'," +
+                "'kudu.masters'='cdh01:7051,cdh02:7051,cdh03:7051'," +
+                "'kudu.scan.row-size'='2','kudu.primary-key-columns'='id')");
         tableEnv.executeSql("select * from test_Replice_kudu").print();
     }
 
